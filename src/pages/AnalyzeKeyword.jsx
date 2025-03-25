@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"; 
 import Navbar from "../components/Navbar";
 
 function AnalyzeKeyword() {
   const [keyword, setKeyword] = useState("");
   const [error, setError] = useState(false);
+  const navigate = useNavigate();
 
   const handleSearch = () => {
     if (keyword.trim().length < 2) {
@@ -14,6 +16,8 @@ function AnalyzeKeyword() {
     setError(false);
     console.log("검색 키워드:", keyword.trim());
     // API 호출 or 이동
+
+    navigate("/analyze/keyword/result", { state: { keyword: keyword.trim() } });
   };
 
   return (
