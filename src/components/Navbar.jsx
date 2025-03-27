@@ -11,52 +11,56 @@ function Navbar() {
   };
 
   const handleMouseLeave = () => {
-    // 메뉴를 바로 닫지 말고, 딜레이 줘서 사용자가 메뉴에 도달할 시간 확보
     timeoutRef.current = setTimeout(() => {
       setShowMenu(false);
-    }, 200); // ← 여유 시간 0.2초
+    }, 200);
   };
 
   return (
-    <nav className="flex justify-between items-center p-4 border-b relative">
-      <Link to="/" className="text-red-500 text-2xl font-bold">
-        Capstone
-      </Link>
+    <nav className="border-b border-gray-200 bg-white">
+      <div className="max-w-7xl mx-auto px-6 md:px-12 h-20 flex justify-between items-center">
+        {/* 왼쪽: 로고 */}
+        <Link to="/" className="text-[#F44F49] text-2xl font-bold">
+          So That
+        </Link>
 
-      <div className="flex items-center space-x-6">
-        {/* 전체 메뉴 영역에 마우스 이벤트 적용 */}
-        <div
-          className="relative"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
-          <span className="font-bold cursor-pointer">analyze</span>
+        {/* 오른쪽: 메뉴 */}
+        <div className="flex items-center space-x-10 text-lg text-gray-800">
+          {/* analyze 메뉴 */}
+          <div
+            className="relative"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            <span className="cursor-pointer hover:text-black transition">
+              analyze
+            </span>
 
-          {showMenu && (
-            <div className="absolute right-0 top-full mt-3 z-10">
-              {/* 꼭지 */}
-              <div className="w-3 h-3 bg-gray-100 rotate-45 absolute top-0 right-4 -translate-y-1/2 shadow" />
-
-              {/* 드롭다운 박스 */}
-              <div className="bg-gray-100 rounded-lg shadow-lg p-2 w-48">
-                <Link
-                  to="/analyze/url"
-                  className="block px-4 py-2 hover:bg-white rounded"
-                >
-                  🔗 URL로 분석하기
-                </Link>
-                <Link
-                  to="/analyze/keyword"
-                  className="block px-4 py-2 hover:bg-white rounded"
-                >
-                  ⌨️ 키워드로 분석하기
-                </Link>
+            {showMenu && (
+              <div className="absolute left-0 top-full mt-3 z-20">
+                <div className="w-3 h-3 bg-gray-100 rotate-45 absolute top-0 left-6 -translate-y-1/2 shadow" />
+                <div className="bg-gray-100 rounded-lg shadow-lg p-3 w-56 text-sm">
+                  <Link
+                    to="/analyze/url"
+                    className="block px-4 py-2 rounded hover:bg-white"
+                  >
+                    🔗 URL로 분석하기
+                  </Link>
+                  <Link
+                    to="/analyze/keyword"
+                    className="block px-4 py-2 rounded hover:bg-white"
+                  >
+                    ⌨️ 키워드로 분석하기
+                  </Link>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        <Link to="/notice" className="font-bold">notice</Link>
+          <Link to="/notice" className="hover:text-black transition">
+            notice
+          </Link>
+        </div>
       </div>
     </nav>
   );

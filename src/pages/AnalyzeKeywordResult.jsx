@@ -1,89 +1,88 @@
-// AnalyzeKeywordResult.jsx
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import mockVideos from "../mock/videos.json"; // 더미 영상 데이터
 
 function AnalyzeKeywordResult() {
   const [videos, setVideos] = useState([]);
-  const [page, setPage] = useState(0);
-  const [isFetching, setIsFetching] = useState(false);
-  const scrollTimeout = useRef(null);
+  const [loading, setLoading] = useState(true);
+  const [searchParams] = useSearchParams();
+  const keyword = searchParams.get("query") || "";
 
-  // 첫 로딩 시 초기 데이터 세팅
   useEffect(() => {
-    fetchMoreVideos();
-  }, []);
+    if (!keyword) return;
 
-  // scroll 감지 (멈췄을 때만 fetch)
-  useEffect(() => {
-    const handleScroll = () => {
-      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-      scrollTimeout.current = setTimeout(() => {
-        const { scrollTop, clientHeight, scrollHeight } = document.documentElement;
-        const isBottom = scrollTop + clientHeight >= scrollHeight - 100;
-        if (isBottom && !isFetching) {
-          fetchMoreVideos();
-        }
-      }, 200); // 유저가 멈춘 후 0.2초 내 행동 없을 때
+    const fetchVideos = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8080/youtube/search?query=${encodeURIComponent(keyword)}`
+        );
+
+        if (!response.ok) throw new Error("서버 응답 실패");
+
+        const data = await response.json();
+        setVideos(data);
+      } catch (error) {
+        console.error("영상 가져오기 실패:", error);
+        setVideos([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [isFetching]);
-
-  const fetchMoreVideos = () => {
-    setIsFetching(true);
-
-    // 6개씩 불러오기
-    const start = page * 6;
-    const next = mockVideos.slice(start, start + 6);
-
-    setVideos((prev) => [...prev, ...next]);
-    setPage((prev) => prev + 1);
-    setIsFetching(false);
-  };
+    fetchVideos();
+  }, [keyword]);
 
   return (
     <div>
       <Navbar />
-
-      <div className="bg-red-500 text-white py-6 px-4 text-center">
-        <h2 className="text-xl font-bold">🔍 분석 영상 선택하기</h2>
-        <p className="text-sm">분석하고 싶은 영상을 선택해주세요!</p>
+      <div className="bg-[#F44F49] text-white py-10 px-6 text-center">
+        <h2 className="text-2xl font-bold mb-1">🧾 분석 영상 선택하기</h2>
+        <p className="text-sm mb-6">"{keyword}" 검색 결과입니다</p>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 mt-10">
-        <input
-          type="text"
-          placeholder="검색어를 입력하세요"
-          className="w-full border-2 border-red-400 rounded-full px-6 py-3 pr-12 mb-6"
-        />
-
-        <div className="grid gap-4">
-          {videos.map((video, index) => (
-            <div
-              key={index}
-              className="flex border rounded-xl p-4 items-center shadow-sm"
-            >
-              <img
-                src={video.thumbnailUrl}
-                alt="thumb"
-                className="w-40 h-24 rounded object-cover mr-4"
-              />
-              <div className="flex-1">
-                <p className="font-semibold text-base mb-1 line-clamp-2">
-                  {video.title}
-                </p>
-                <p className="text-sm text-gray-500">
-                  {video.channelTitle} ・ {video.viewCount} 조회수
-                </p>
+      <div className="max-w-4xl mx-auto px-4 mt-10 mb-20">
+        {loading ? (
+          <p className="text-center text-gray-500">로딩 중...</p>
+        ) : videos.length === 0 ? (
+          <p className="text-center text-gray-500">표시할 영상이 없습니다.</p>
+        ) : (
+          <div className="grid gap-4">
+            {videos.map((video, index) => (
+              <div
+                key={index}
+                className="flex border rounded-xl p-4 items-center shadow-sm"
+              >
+                <img
+                  src={video.thumbnailUrl}
+                  alt="thumb"
+                  className="w-48 h-28 rounded-xl object-cover mr-4"
+                />
+                <div className="flex-1">
+                  <p className="text-lg font-bold mb-2 line-clamp-2">{video.title}</p>
+                  <div className="flex items-center mb-2">
+                    <img
+                      src={video.profileImageUrl}
+                      alt="profile"
+                      className="w-8 h-8 rounded-full mr-2 object-cover"
+                    />
+                    <span className="font-semibold mr-2">{video.channelTitle}</span>
+                    <span className="text-sm text-gray-500">
+                      구독자 {Math.round(video.subscriberCount / 1000) / 10}만명
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-600 flex flex-wrap gap-4">
+                    <span>📺 {Number(video.viewCount).toLocaleString()}회</span>
+                    <span>
+                      🗓 {new Date(video.publishedAt).toLocaleDateString("ko-KR").slice(2)}
+                    </span>
+                    <span>👍 {Number(video.likeCount).toLocaleString()}개</span>
+                    <span>💬 {Number(video.commentCount).toLocaleString()}개</span>
+                  </div>
+                </div>
               </div>
-              <button className="text-2xl text-gray-500">✔️</button>
-            </div>
-          ))}
-
-          {isFetching && <p className="text-center text-gray-400">불러오는 중...</p>}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
