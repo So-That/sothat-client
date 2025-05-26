@@ -5,7 +5,7 @@ function Home() {
   return (
     <div>
       <Navbar />
-      <div className="flex flex-col items-center justify-start min-h-screen bg-white px-4 pt-50">
+      <div className="flex flex-col items-center justify-start bg-white px-4 pt-50">
         <div className="flex flex-row items-center justify-center gap-16">
           {/* 왼쪽 텍스트 */}
           <div className="text-left">
@@ -30,11 +30,11 @@ function Home() {
 
         </div>
 
-        {/* 아래 안내 */}
+        {/* 아래 안내
         <p className="mt-80 text-sm text-black font-medium">
           아래로 내려서 사용법 알아보기
         </p>
-        <div className="text-2xl mt-1">⬇️</div>
+        <div className="text-2xl mt-1">⬇️</div> */}
       </div>
     </div>
   );

@@ -1,23 +1,31 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { useSearch } from "../context/SearchContext.jsx"; // ✅ 추가
 
 function AnalyzeKeyword() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { input } = useSearch(); // ✅ context에서 input 받기
+
   const [keyword, setKeyword] = useState("");
   const [error, setError] = useState(false);
-  const navigate = useNavigate();
 
   const handleSearch = () => {
-    if (keyword.trim().length < 2) {
+    const finalKeyword =
+      keyword.trim() ||
+      (typeof location.state?.input === "string" ? location.state.input.trim() : "") ||
+      input?.trim();
+
+    if (!finalKeyword || finalKeyword.length < 2) {
       setError(true);
       return;
     }
 
     setError(false);
-    console.log("검색 키워드:", keyword.trim());
+    console.log("검색 키워드:", finalKeyword);
 
-    // ✅ 쿼리 파라미터로 전달
-    navigate(`/analyze/keyword/result?query=${encodeURIComponent(keyword.trim())}`);
+    navigate(`/analyze/keyword/result?query=${encodeURIComponent(finalKeyword)}`);
   };
 
   return (
@@ -25,7 +33,9 @@ function AnalyzeKeyword() {
       <Navbar />
 
       <div className="max-w-2xl mx-auto mt-30 px-4">
-        <h2 className="text-2xl font-bold mb-1">⌨️ 키워드로 분석하기</h2>
+        <h2 className="text-2xl font-bold mb-1">
+          ⌨️ {input?.trim().length > 0 ? `"${input}" 키워드로 분석하기` : "키워드로 분석하기"}
+        </h2>
         <p className="text-gray-600 mb-4">검색을 통해 분석할 영상을 골라보세요!</p>
         <div className="border-b-2 border-neutral-500 w-full mb-6"></div>
 
@@ -41,7 +51,7 @@ function AnalyzeKeyword() {
                 handleSearch();
               }
             }}
-            placeholder="검색어를 입력하세요"
+            placeholder="아이폰 16 리뷰"
             className={`flex-1 h-14 border-2 px-4 py-2 pr-10 rounded-full ${
               error ? "border-red-500" : "border-red-400"
             }`}

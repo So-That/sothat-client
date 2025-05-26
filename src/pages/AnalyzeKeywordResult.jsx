@@ -12,20 +12,44 @@ function AnalyzeKeywordResult() {
   const navigate = useNavigate();
   const keyword = searchParams.get("query") || "";
 
+  // useEffect(() => {
+  //   if (!keyword) return;
+  //   const fetchVideos = async () => {
+  //     try {
+  //       setVideos(mockVideos); // ✅ mock data
+  //     } catch (err) {
+  //       console.error(err);
+  //       setVideos([]);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchVideos();
+  // }, [keyword]);
+
   useEffect(() => {
-    if (!keyword) return;
-    const fetchVideos = async () => {
-      try {
-        setVideos(mockVideos); // ✅ mock data
-      } catch (err) {
-        console.error(err);
-        setVideos([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchVideos();
-  }, [keyword]);
+  if (!keyword) return;
+
+  const fetchVideos = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/youtube/search?query=${encodeURIComponent(keyword)}`
+      );
+      if (!response.ok) throw new Error("서버 응답 실패");
+
+      const data = await response.json();
+      setVideos(data); // ✅ 실제 API 결과로 대체
+    } catch (err) {
+      console.error("영상 로딩 실패:", err);
+      setVideos([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchVideos();
+}, [keyword]);
+
 
   const toggleVideoSelection = (video) => {
     setSelectedVideos((prev) => {
