@@ -67,7 +67,7 @@ function AnalyzeKeywordResult() {
 
   const handleAnalyzeClick = () => {
     const urls = selectedVideos.map((v) => `https://youtu.be/${v.videoId}`);
-    navigate("/analyze", { state: { urls } });
+    navigate("/analyze", { state: { urls, keyword } });
   };
 
   const getSortedVideos = () => {

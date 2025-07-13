@@ -36,7 +36,7 @@ function AnalyzeKeyword() {
         <h2 className="text-2xl font-bold mb-1">
           ⌨️ {input?.trim().length > 0 ? `"${input}" 키워드로 분석하기` : "키워드로 분석하기"}
         </h2>
-        <p className="text-gray-600 mb-4">검색을 통해 분석할 영상을 골라보세요!</p>
+        <p className="text-gray-600 mb-4">직접 유튜브 검색을 통해 분석할 영상을 골라보세요!</p>
         <div className="border-b-2 border-neutral-500 w-full mb-6"></div>
 
         {/* 입력창 */}
