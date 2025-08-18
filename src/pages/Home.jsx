@@ -1,7 +1,18 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { FaSearch } from "react-icons/fa";
 
 function Home() {
+  const [keyword, setKeyword] = useState("");
+  const navigate = useNavigate();
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (!keyword.trim()) return;
+    navigate(`/search?query=${encodeURIComponent(keyword)}`);
+  };
+
   return (
     <div>
       <Navbar />
@@ -17,24 +28,19 @@ function Home() {
           </div>
 
           {/* 오른쪽 검색창 */}
-          <div className="w-[500px]">
+          <form onSubmit={handleSearch} className="w-[500px]">
             <div className="flex items-center h-[60px] border-[3px] border-[#FF0032] rounded-full px-6">
               <FaSearch className="text-[#FF0032] text-2xl mr-3" />
               <input
                 type="text"
                 placeholder="검색어 입력..."
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
                 className="h-full w-full text-lg outline-none placeholder-gray-400"
               />
-  </div>
-</div>
-
+            </div>
+          </form>
         </div>
-
-        {/* 아래 안내
-        <p className="mt-80 text-sm text-black font-medium">
-          아래로 내려서 사용법 알아보기
-        </p>
-        <div className="text-2xl mt-1">⬇️</div> */}
       </div>
     </div>
   );

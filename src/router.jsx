@@ -4,7 +4,7 @@ import Search from "./pages/Search";
 import AnalyzeURL from "./pages/AnalyzeURL";
 import AnalyzeKeyword from "./pages/AnalyzeKeyword";
 import AnalyzeKeywordResult from "./pages/AnalyzeKeywordResult";
-import AnalyzeResult from "./pages/AnalyzeResult"; // ✅ 추가
+import AnalyzeResult from "./pages/AnalyzeResult"; 
 
 function AppRouter() {
   return (
@@ -14,7 +14,7 @@ function AppRouter() {
       <Route path="/analyze/url" element={<AnalyzeURL />} />
       <Route path="/analyze/keyword" element={<AnalyzeKeyword />} />
       <Route path="/analyze/keyword/result" element={<AnalyzeKeywordResult />} />
-      <Route path="/analyze" element={<AnalyzeResult />} /> {/* ✅ 추가 */}
+      <Route path="/analyze" element={<AnalyzeResult />} /> 
     </Routes>
   );
 }

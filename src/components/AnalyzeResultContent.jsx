@@ -1,50 +1,113 @@
-import React from "react";
+import React, { useMemo } from "react";
+import SentimentPieChart from "./SentimentPieChart";
+import CategorySentimentBar from "./CategorySentimentBar";
 
-const sectionData = {
-  "가격/구성": "아이폰 16의 가격과 관련하여 사용자들은 15프로맥스와 16프로 사이에서 고민하고 있습니다. 15프로맥스는 할인으로 인해 16프로보다 저렴해졌으며, 성능이나 화면 크기 차이를 고려하면서 선택을 고민하는 모습입니다. 16모델은 일반 모델도 충분히 매력적이라는 평가가 있으며, 가격 대비 기본 모델의 기능 향상도 긍정적으로 평가됩니다. 그러나 일부 사용자는 코팅 스펙의 변화에 대해 불만을 표하고, 가격이 비싸서 기본 모델을 선택하는 경우도 있습니다. 카메라를 잘 사용하지 않거나 60hz의 주사율에 익숙한 사용자들은 일반 모델을 선택하는 경향이 있습니다.",
-  "디자인/외형": "아이폰 16의 디자인과 외형에 대한 반응은 다양합니다. 일반 16 디자인에 대해 부정적인 의견이 있는 반면, 특정 색상이나 무게 때문에 16일반을 선택하는 사용자가 많습니다. 특히 무게가 중요한 요소로 작용하며, 16프로의 무게가 증가했음에도 불구하고 일부 사용자들은 만족감을 표시합니다. 색상 선택에 대한 아쉬움도 있으며, 특히 프로 모델의 컬러가 투박하다는 의견이 있습니다. 무게 때문에 일반 모델을 선택하는 경우가 많으며, 디자인은 여전히 중요한 구매 결정 요소로 작용하고 있습니다. 하지만 일부 사용자는 여전히 디자인의 변화가 부족하다는 점을 지적하며, 16 일반 모델의 새로운 색상이나 카메라 모양 변화에 긍정적인 반응을 보이는 경우도 있습니다.",
-  "성능/기능": "아이폰 16의 성능과 기능에 대한 평가는 대체로 긍정적입니다. 주사율에 대한 의견은 엇갈리며, 높은 주사율이 어지럽다는 사용자도 있는 반면, 이를 선호하는 사용자도 있습니다. 정밀 이중 주파수 GPS와 같은 기능은 프로 모델로 업그레이드를 고민하게 만드는 요소로 작용합니다. 14프로에서 16프로로 업그레이드한 사용자는 화질 차이와 카메라 성능에 대한 만족감을 표하며, 발열 제어 및 배터리 성능도 긍정적으로 평가됩니다. 디스플레이와 관련된 요소는 사용자에게 중요한 고려 요소로 작용하며, AR코팅과 같은 일부 기능에 대한 언급이 부족하다는 점은 아쉬움으로 남습니다.",
-  "편의성/사용감": "아이폰 16의 편의성과 사용감은 대체로 긍정적으로 평가됩니다. 무게와 휴대성, 그립감이 중요한 요소로 작용하며, 일반 모델이 이러한 측면에서 매력적으로 보입니다. 60hz 주사율은 일부 사용자에게 불편함을 줄 수 있지만, 많은 사용자가 이를 감수하고 일반 모델을 선택합니다. 전면 카메라 비교나 AOD 기능에 대한 언급도 일부 사용자에게 관심을 받을 수 있는 요소입니다.",
-  "품질/내구성": "아이폰 16의 품질과 내구성에 대한 평가도 다양합니다. 내구성 측면에서는 15프로와 16프로 중 어느 쪽이 더 나은지에 대한 고민이 있으며, 16프로의 무게 감소와 배터리 성능 향상에 만족하는 사용자가 많습니다. 카메라 포맷 문제로 인한 교환 사례가 있으며, 애플의 대응이 없다는 점에서 불만을 표하는 사용자도 있습니다. 전반적으로 품질과 내구성은 사용자들에게 중요한 고려 요소로 작용하고 있습니다."
-};
+function AnalyzeResultContent({ loading, error, analysis }) {
+  const {
+    sectionData, overallSummary, compareNote, totalSentiment, categorySentiment
+  } = useMemo(() => {
+    if (!analysis) {
+      return { sectionData:{}, overallSummary:"", compareNote:"", totalSentiment:{}, categorySentiment:{} };
+    }
+    return {
+      sectionData: analysis["카테고리별요약"] || {},
+      overallSummary: analysis["전체요약"] || "",
+      compareNote: analysis["비교"] || "",
+      totalSentiment: analysis["total_sentiment_count"] || {},
+      categorySentiment: analysis["category_sentiment_count"] || {},
+    };
+  }, [analysis]);
 
-const overallSummary =
-  "아이폰 16은 다양한 사용자들의 평가를 받고 있습니다. 가격/구성 측면에서는 15프로맥스의 할인으로 인해 16프로와의 가격 비교가 이루어지고 있으며, 기본 모델의 기능 향상도 주목받고 있습니다. 디자인/외형에서는 무게와 색상이 중요한 요소로 작용하며, 16 일반 모델의 새로운 색상이나 카메라 모양 변화에 긍정적인 반응이 있지만, 여전히 디자인의 변화가 부족하다는 지적도 있습니다. 성능/기능 측면에서는 주사율과 정밀 GPS 기능이 업그레이드 결정을 고민하게 만드는 요소로 작용하며, 발열 제어 및 배터리 성능도 긍정적으로 평가됩니다. 편의성과 사용감에서는 무게와 그립감이 중요한 요소로 작용하며, 일반 모델이 이러한 측면에서 매력적으로 보입니다. 품질/내구성에서는 무게 감소와 배터리 성능 향상에 만족하는 사용자가 많지만, 카메라 포맷 문제로 인한 불만도 일부 존재합니다. 전반적으로 아이폰 16은 다양한 면에서 사용자들에게 긍정적인 평가를 받고 있지만, 여전히 개선이 필요한 부분도 존재합니다.";
+  // ...loading / error 처리 동일
 
-function AnalyzeResultContent() {
   const keys = Object.keys(sectionData);
 
   return (
     <div className="max-w-4xl mx-auto px-4 pb-20">
-      {keys.map((title, index) => (
-        <div
-          key={title}
-          className="bg-white rounded-2xl shadow-md p-6 mb-10 border border-gray-200"
-        >
-          <h3 className="text-xl font-bold mb-4">
-            <span className="text-red-500 font-black mr-2">{index + 1}</span>
-            {title}
-          </h3>
-          <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-            {sectionData[title]}
-          </p>
-        </div>
-      ))}
+      {/* 카테고리별 카드들 */}
+      {keys.map((title, index) => {
+        const counts = categorySentiment?.[title] || {};
+        return (
+          <div
+            key={title}
+            className="bg-white rounded-2xl shadow-md p-6 mb-10 border border-gray-200"
+          >
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="flex-1">
+                <h3 className="text-xl font-bold mb-4">
+                  <span className="text-red-500 font-black mr-2">{index + 1}</span>
+                  {title}
+                </h3>
+                <p className="text-gray-700 text-s leading-relaxed whitespace-pre-line">
+                  {sectionData[title]}
+                </p>
+              </div>
 
-      {/* 종합 요약 */}
+              <div className="w-full md:w-64 min-w-[220px] shrink-0">
+                <SentimentPieChart
+                  title="감정 분포"
+                  counts={counts}
+                  height={200}
+                  donut
+                  legend
+                />
+              </div>
+            </div>
+          </div>
+        );
+      })}
+
+    {/* ✅ 전체 요약(차트 좌우, 텍스트 하단) */}
+    {overallSummary && (
       <div
         id="summary-section"
         className="bg-white rounded-2xl shadow-md p-6 border border-gray-300"
       >
-        <h3 className="text-xl font-bold mb-4">
+        <h3 className="text-xl font-bold mb-6">
           <span className="text-red-500 font-black mr-2">🧾</span>전체 요약
         </h3>
-        <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-line">
-          {overallSummary}
-        </p>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          {/* 왼쪽: 전체 감정 도넛 */}
+          <SentimentPieChart
+            title="전체 감정 분포"
+            counts={totalSentiment}
+            height={260}
+            donut
+            legend
+          />
+
+          {/* 오른쪽: 카테고리별 막대 (제목 포함) */}
+          <CategorySentimentBar
+            title="카테고리별 감정 분포"
+            categorySentiment={categorySentiment}
+            height={260}
+          />
+
+          {/* 하단: 텍스트 요약(2열 전체 폭) */}
+          <div className="lg:col-span-2">
+            <p className="text-gray-800 text-s leading-relaxed whitespace-pre-line">
+              {overallSummary}
+            </p>
+          </div>
+        </div>
       </div>
+    )}
+
+
+
+      {/* 비교 섹션 */}
+      {compareNote && (
+        <div className="bg-white rounded-2xl shadow-md p-6 border border-gray-200 mt-8">
+          <h3 className="text-xl font-bold mb-4">
+            <span className="text-blue-500 font-black mr-2">🔀</span>비교
+          </h3>
+          <p className="text-gray-700 text-s leading-relaxed whitespace-pre-line">
+            {compareNote}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
-
 export default AnalyzeResultContent;
