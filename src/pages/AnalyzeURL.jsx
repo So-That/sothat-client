@@ -1,26 +1,68 @@
+// src/pages/AnalyzeURL.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSearch } from "../context/SearchContext.jsx";
 import Navbar from "../components/Navbar";
 
-// 유튜브 URL 유효성 검사
-const isValidYoutubeUrl = (url) => {
-  const regex =
-    /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([\w\-]{11})(\S*)?$/
-  return regex.test(url.trim());
+// ✅ 유튜브 videoId 추출기 (watch/shorts/embed/live/youtu.be, www/m 도메인 모두 지원)
+const extractYouTubeId = (raw) => {
+  if (!raw) return null;
+  try {
+    const url = new URL(raw.startsWith("http") ? raw : `https://${raw}`);
+    // 호스트 정규화
+    const host = url.hostname.replace(/^www\./, "").replace(/^m\./, "");
+    const path = url.pathname.replace(/\/+$/, ""); // 끝 슬래시 제거
+    const segs = path.split("/").filter(Boolean);  // ["shorts", "VIDEOID"]
+
+    // 1) youtu.be/<id>
+    if (host === "youtu.be" && segs.length >= 1) {
+      const id = segs[0];
+      return id.length === 11 ? id : null;
+    }
+
+    // 2) youtube.com/watch?v=<id>
+    if (host.endsWith("youtube.com") && url.pathname === "/watch") {
+      const id = url.searchParams.get("v");
+      return id && id.length === 11 ? id : null;
+    }
+
+    // 3) youtube.com/shorts/<id>
+    if (host.endsWith("youtube.com") && segs[0] === "shorts" && segs[1]) {
+      return segs[1].length === 11 ? segs[1] : null;
+    }
+
+    // 4) youtube.com/embed/<id>
+    if (host.endsWith("youtube.com") && segs[0] === "embed" && segs[1]) {
+      return segs[1].length === 11 ? segs[1] : null;
+    }
+
+    // 5) youtube.com/live/<id>  (라이브 VOD 링크)
+    if (host.endsWith("youtube.com") && segs[0] === "live" && segs[1]) {
+      return segs[1].length === 11 ? segs[1] : null;
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
 };
+
+// ✅ 유효성: videoId가 뽑히면 OK
+const isValidYoutubeUrl = (url) => !!extractYouTubeId(url);
 
 function AnalyzeURL() {
   const { input } = useSearch();
   const navigate = useNavigate();
 
-  const [urls, setUrls] = useState([
-    { value: "", error: false, duplicate: false },
-  ]);
+  const [urls, setUrls] = useState([{ value: "", error: false, duplicate: false }]);
 
-  const checkDuplicates = (arr) => {
-    const values = arr.map((u) => u.value.trim());
-    return values.map((v, i) => values.indexOf(v) !== i && v !== "");
+  // 중복 체크: "문자열"이 아니라 "videoId" 기준으로!
+  const checkDuplicatesById = (arr) => {
+    const ids = arr.map((u) => extractYouTubeId(u.value.trim()) || "");
+    return arr.map((u, i) => {
+      const id = ids[i];
+      return id && ids.indexOf(id) !== i; // 같은 id가 앞에 이미 있으면 중복
+    });
   };
 
   const handleChange = (index, value) => {
@@ -30,14 +72,9 @@ function AnalyzeURL() {
     const trimmed = value.trim();
     updated[index].error = trimmed !== "" && !isValidYoutubeUrl(trimmed);
 
-    const nonEmpty = updated.filter((u) => u.value.trim() !== "").map((u) => u.value.trim());
-    const duplicates = nonEmpty.map((v, i, arr) => arr.indexOf(v) !== i && v !== "");
-
-    updated.forEach((u, i) => {
-      u.duplicate =
-        u.value.trim() !== "" &&
-        duplicates[nonEmpty.indexOf(u.value.trim())];
-    });
+    // videoId 기준 중복 체크
+    const dupFlags = checkDuplicatesById(updated);
+    updated.forEach((u, i) => (u.duplicate = dupFlags[i]));
 
     setUrls(updated);
   };
@@ -48,29 +85,33 @@ function AnalyzeURL() {
 
   const removeUrl = (index) => {
     const updated = urls.filter((_, i) => i !== index);
-    const duplicates = checkDuplicates(updated);
-    updated.forEach((u, i) => {
-      u.duplicate = duplicates[i];
-    });
+    const dupFlags = checkDuplicatesById(updated);
+    updated.forEach((u, i) => (u.duplicate = dupFlags[i]));
     setUrls(updated);
   };
 
   const handleAnalyze = () => {
-    const filledUrls = urls.filter((url) => url.value.trim() !== "");
-    const hasInvalid = filledUrls.some((url) => url.error || url.duplicate);
+    const filled = urls.filter((u) => u.value.trim() !== "");
+    const hasInvalid = filled.some((u) => u.error || u.duplicate || !isValidYoutubeUrl(u.value));
 
     if (hasInvalid) {
       alert("유효하지 않거나 중복된 URL이 있습니다.");
       return;
     }
 
-    const validUrls = filledUrls.map((url) => url.value.trim());
-    console.log("분석할 URL들:", validUrls);
+    // ⓐ 원본 URL 그대로 보낼 수도 있고,
+    // ⓑ videoId로 정규화해서 보낼 수도 있어요(아래는 정규화 예시).
+    const canonicalUrls = filled.map((u) => {
+      const id = extractYouTubeId(u.value.trim());
+      return `https://youtu.be/${id}`; // 정규화(선택)
+    });
+
+    console.log("분석할 URL들:", canonicalUrls);
 
     navigate("/analyze", {
       state: {
-        urls: validUrls,
-        keyword: input || "", // 키워드도 함께 넘김
+        urls: canonicalUrls, // 또는 filled.map(u => u.value.trim())
+        keyword: input || "",
       },
     });
   };
@@ -83,9 +124,7 @@ function AnalyzeURL() {
         <h2 className="text-2xl font-bold mb-1">
           🔗 {input?.trim().length > 0 ? `"${input}" 키워드로 분석하기` : "키워드로 분석하기"}
         </h2>
-        <p className="text-gray-600 mb-4">
-          선택한 키워드와 관련된 영상 URL을 입력해 분석해보세요!
-        </p>
+        <p className="text-gray-600 mb-4">선택한 키워드와 관련된 영상 URL을 입력해 분석해보세요!</p>
         <div className="border-b-2 border-red-500 w-full mb-6"></div>
 
         {urls.map((url, index) => (
@@ -98,15 +137,14 @@ function AnalyzeURL() {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    if (
-                      isValidYoutubeUrl(url.value) &&
-                      !urls.some((u, i) => u.value === url.value && i !== index)
-                    ) {
-                      addUrl();
-                    }
+                    const ok = isValidYoutubeUrl(url.value);
+                    const id = extractYouTubeId(url.value);
+                    const ids = urls.map((u) => extractYouTubeId(u.value)).filter(Boolean);
+                    const dup = id && ids.includes(id) && ids.indexOf(id) !== ids.lastIndexOf(id);
+                    if (ok && !dup) addUrl();
                   }
                 }}
-                placeholder="https://youtu.be/..."
+                placeholder="https://youtu.be/... 또는 https://youtube.com/shorts/..."
                 className={`flex-1 border px-4 py-2 rounded ${
                   url.error || url.duplicate ? "border-red-500" : ""
                 }`}
@@ -124,9 +162,7 @@ function AnalyzeURL() {
             {url.error && (
               <p className="text-sm text-red-500 ml-2">유효한 유튜브 링크를 입력해주세요.</p>
             )}
-            {url.duplicate && (
-              <p className="text-sm text-red-500 ml-2">중복된 URL입니다.</p>
-            )}
+            {url.duplicate && <p className="text-sm text-red-500 ml-2">중복된 영상(URL)입니다.</p>}
           </div>
         ))}
 
