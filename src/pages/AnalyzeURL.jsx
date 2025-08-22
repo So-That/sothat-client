@@ -91,30 +91,27 @@ function AnalyzeURL() {
   };
 
   const handleAnalyze = () => {
-    const filled = urls.filter((u) => u.value.trim() !== "");
-    const hasInvalid = filled.some((u) => u.error || u.duplicate || !isValidYoutubeUrl(u.value));
+  const filled = urls.filter((u) => u.value.trim() !== "");
+  const hasInvalid = filled.some(
+    (u) => u.error || u.duplicate || !isValidYoutubeUrl(u.value)
+  );
 
-    if (hasInvalid) {
-      alert("유효하지 않거나 중복된 URL이 있습니다.");
-      return;
-    }
+  if (hasInvalid) {
+    alert("유효하지 않거나 중복된 URL이 있습니다.");
+    return;
+  }
 
-    // ⓐ 원본 URL 그대로 보낼 수도 있고,
-    // ⓑ videoId로 정규화해서 보낼 수도 있어요(아래는 정규화 예시).
-    const canonicalUrls = filled.map((u) => {
-      const id = extractYouTubeId(u.value.trim());
-      return `https://youtu.be/${id}`; // 정규화(선택)
-    });
+  // videoId만 추출
+  const videoIds = filled.map((u) => extractYouTubeId(u.value.trim()));
 
-    console.log("분석할 URL들:", canonicalUrls);
+  navigate("/analyze", {
+    state: {
+      urls: videoIds, // 백엔드 요구사항: urls 필드에 id 배열
+      keyword: input || "",
+    },
+  });
+}; 
 
-    navigate("/analyze", {
-      state: {
-        urls: canonicalUrls, // 또는 filled.map(u => u.value.trim())
-        keyword: input || "",
-      },
-    });
-  };
 
   return (
     <div className="relative min-h-screen pb-28">
