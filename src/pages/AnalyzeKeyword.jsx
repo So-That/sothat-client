@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import { useSearch } from "../context/SearchContext.jsx"; // ✅ 추가
+import { useSearch } from "../context/SearchContext.jsx";
 
 function AnalyzeKeyword() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { input } = useSearch(); // ✅ context에서 input 받기
+  const { input } = useSearch();
 
   const [keyword, setKeyword] = useState("");
   const [error, setError] = useState(false);
@@ -34,43 +34,41 @@ function AnalyzeKeyword() {
 
       <div className="max-w-2xl mx-auto mt-30 px-4">
         <h2 className="text-2xl font-bold mb-1">
-          ⌨️ {input?.trim().length > 0 ? `"${input}" 키워드로 분석하기` : "키워드로 분석하기"}
+          ⌨️ {input?.trim().length > 0 ? `"${input}" 유튜브 검색하기` : "유튜브 검색하기"}
         </h2>
-        <p className="text-gray-600 mb-4">직접 유튜브 검색을 통해 분석할 영상을 골라보세요!</p>
+        <p className="text-gray-600 mb-4">유튜브에서 검색 후 분석할 영상을 선택하세요!</p>
         <div className="border-b-2 border-neutral-500 w-full mb-6"></div>
 
         {/* 입력창 */}
-        <div className="flex items-center space-x-2 mb-4 relative">
-          <input
-            type="text"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleSearch();
-              }
-            }}
-            placeholder="아이폰 16 리뷰"
-            className={`flex-1 h-14 border-2 px-4 py-2 pr-10 rounded-full ${
-              error ? "border-red-500" : "border-red-400"
-            }`}
-          />
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-red-400 pointer-events-none">🔍</div>
-        </div>
+<div className="flex items-center w-full max-w-2xl border border-gray-300 rounded-full overflow-hidden shadow-sm">
+  <input
+    type="text"
+    value={keyword}
+    onChange={(e) => setKeyword(e.target.value)}
+    placeholder="YouTube에서 검색 (예: 아이폰 16 리뷰)"
+    className="flex-1 px-4 py-3 outline-none text-gray-700"
+  />
+  <button
+    onClick={handleSearch}
+    className="px-4 py-3 bg-gray-100 hover:bg-gray-200 transition flex items-center"
+  >
+    🔍
+  </button>
+</div>
+
 
         {error && (
           <p className="text-sm text-red-500 ml-2 mb-4">검색어를 입력해주세요.</p>
         )}
       </div>
 
-      {/* 고정된 버튼 */}
+      {/* CTA 버튼 */}
       <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50">
         <button
           onClick={handleSearch}
-          className="bg-neutral-500 text-white px-10 py-3 rounded-full shadow-md hover:bg-neutral-600 transition text-lg"
+          className="bg-red-500 text-white px-10 py-3 rounded-full shadow-md hover:bg-red-600 transition text-lg"
         >
-          검색하기 →
+          유튜브 검색하기 →
         </button>
       </div>
     </div>

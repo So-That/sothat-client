@@ -2,15 +2,19 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { FaSearch } from "react-icons/fa";
+import { useSearch } from "../context/SearchContext.jsx"; // ✅ 추가
 
 function Home() {
   const [keyword, setKeyword] = useState("");
+  const { setInput } = useSearch(); // ✅ context setter 가져오기
   const navigate = useNavigate();
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (!keyword.trim()) return;
-    navigate(`/search?query=${encodeURIComponent(keyword)}`);
+
+    setInput(keyword.trim()); // ✅ context에 저장
+    navigate("/search");      // ✅ query string 대신 그냥 이동
   };
 
   return (
