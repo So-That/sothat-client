@@ -1,0 +1,84 @@
+pipeline {
+  agent any
+  options { timestamps() }
+
+  parameters {
+    string(name: 'S3_BUCKET',  defaultValue: 'sothat-web',       description: '배포 대상 S3 버킷')
+    string(name: 'AWS_REGION', defaultValue: 'ap-northeast-2',   description: 'AWS 리전')
+    booleanParam(name: 'SPA_ROUTING', defaultValue: true, description: 'error.html을 index.html로 복사')
+  }
+
+  environment {
+    AWS_CREDENTIALS_ID = 'aws-jenkins-creds'
+    NODE_IMAGE         = 'node:20-bullseye'
+    NODE_ENV           = 'production'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps { checkout scm }
+    }
+
+    stage('Build (Dockerized Node)') {
+      steps {
+        sh '''
+          set -eux
+          docker run --rm \
+            -v "$PWD":/app \
+            -w /app \
+            ${NODE_IMAGE} \
+            bash -lc '
+              set -eux
+              if [ -f package-lock.json ]; then npm ci; else npm install; fi
+              npm run build
+            '
+          test -d dist && [ "$(ls -A dist)" ] || { echo "dist is empty or missing"; exit 2; }
+        '''
+      }
+    }
+
+    stage('Deploy to S3') {
+      steps {
+        withAWS(credentials: "${AWS_CREDENTIALS_ID}", region: "${params.AWS_REGION}") {
+          sh '''
+            set -eux
+            export AWS_DEFAULT_REGION='${AWS_REGION}'
+
+            # (1) HTML 제외 모든 파일: 길게 캐시
+            aws s3 sync dist/ s3://${S3_BUCKET}/ \
+              --delete \
+              --exclude "*.html" \
+              --cache-control "max-age=31536000,public"
+
+            # (2) HTML만 다시 업로드: 무캐시 + 올바른 MIME
+            aws s3 cp dist/ s3://${S3_BUCKET}/ \
+              --recursive \
+              --exclude "*" \
+              --include "*.html" \
+              --content-type "text/html" \
+              --cache-control "no-cache, no-store, must-revalidate" \
+              --metadata-directive REPLACE
+
+            # (옵션) SPA 라우팅: 404 → index.html
+            if [ "${SPA_ROUTING}" = "true" ] && [ -f dist/index.html ]; then
+              aws s3 cp dist/index.html s3://${S3_BUCKET}/error.html \
+                --content-type "text/html" \
+                --cache-control "no-cache, no-store, must-revalidate" \
+                --metadata-directive REPLACE || true
+            fi
+          '''
+        }
+      }
+    }
+  }
+
+  post {
+    success {
+      echo "✅ Deployed"
+      echo "URL: http://${params.S3_BUCKET}.s3-website.${params.AWS_REGION}.amazonaws.com"
+    }
+    failure {
+      echo "❌ Deployment failed"
+    }
+  }
+}
