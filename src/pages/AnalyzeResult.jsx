@@ -6,7 +6,7 @@ import AnalyzeResultContent from "../components/AnalyzeResultContent";
 import mockAnalysis from "../mock/analyzeResult.json";
 
 // ✅ 모크 우선 사용: true -> 목 사용, false -> 백엔드 POST /summary 사용
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 function AnalyzeResult() {
   const location = useLocation();
@@ -39,7 +39,7 @@ function AnalyzeResult() {
         }
 
         // ✅ 백엔드 연동 (새 스키마 대응)
-        const res = await fetch("http://localhost:8080/comments/summary", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/comments/summary`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ keyword, urls }),

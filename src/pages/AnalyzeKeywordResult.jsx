@@ -33,7 +33,7 @@ function AnalyzeKeywordResult() {
   const fetchVideos = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8080/youtube/search?query=${encodeURIComponent(keyword)}`
+        `${import.meta.env.VITE_API_URL}/youtube/search?query=${encodeURIComponent(keyword)}`
       );
       if (!response.ok) throw new Error("서버 응답 실패");
 
