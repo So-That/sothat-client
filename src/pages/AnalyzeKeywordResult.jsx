@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import mockVideos from "../mock/videos.json";
 
 function AnalyzeKeywordResult() {
   const [videos, setVideos] = useState([]);

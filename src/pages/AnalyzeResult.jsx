@@ -10,7 +10,6 @@ const USE_MOCK = false;
 
 function AnalyzeResult() {
   const location = useLocation();
-  const navigate = useNavigate();
   const { urls = [], keyword = "" } = location.state || {};
 
   const [analysis, setAnalysis] = useState(null); // {제품명, 카테고리별요약, 전체요약, 비교, total_sentiment_count, category_sentiment_count}
@@ -77,19 +76,26 @@ function AnalyzeResult() {
   }, [analysis, keyword]);
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
-      <AnalyzeResultTop
-        loading={loading}
-        error={error}
-        meta={topMeta}
-        keyword={keyword}
-      />
-      <AnalyzeResultContent
-        loading={loading}
-        error={error}
-        analysis={analysis}
-      />
-    </div>
+      <div className="relative min-h-screen bg-[#FAFAFA]">
+        {loading && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-50">
+              <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-300 border-t-blue-500 mb-3"></div>
+              <p className="text-gray-600 font-medium">로딩중...</p>
+            </div>
+        )}
+
+        <AnalyzeResultTop
+            loading={loading}
+            error={error}
+            meta={topMeta}
+            keyword={keyword}
+        />
+        <AnalyzeResultContent
+            loading={loading}
+            error={error}
+            analysis={analysis}
+        />
+      </div>
   );
 }
 
