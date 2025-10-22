@@ -1,5 +1,5 @@
 // src/pages/AnalyzeResult.jsx
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import AnalyzeResultTop from "../components/AnalyzeResultTop";
 import AnalyzeResultContent from "../components/AnalyzeResultContent";
@@ -76,25 +76,28 @@ function AnalyzeResult() {
   }, [analysis, keyword]);
 
   return (
-      <div className="relative min-h-screen bg-[#FAFAFA]">
-        {loading && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-50">
-              <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-300 border-t-blue-500 mb-3"></div>
-              <p className="text-gray-600 font-medium">로딩중...</p>
-            </div>
-        )}
-
+      <div className="min-h-screen bg-[#FAFAFA]">
+        {/* 상단 요약은 항상 표시 */}
         <AnalyzeResultTop
             loading={loading}
             error={error}
             meta={topMeta}
             keyword={keyword}
         />
-        <AnalyzeResultContent
-            loading={loading}
-            error={error}
-            analysis={analysis}
-        />
+
+        {/* 하단 내용: 로딩 중일 때 스피너 표시 */}
+        {loading ? (
+            <div className="flex flex-col items-center justify-center py-24">
+              <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-300 border-t-blue-500 mb-3"></div>
+              <p className="text-gray-600 font-medium">로딩중...</p>
+            </div>
+        ) : (
+            <AnalyzeResultContent
+                loading={loading}
+                error={error}
+                analysis={analysis}
+            />
+        )}
       </div>
   );
 }
